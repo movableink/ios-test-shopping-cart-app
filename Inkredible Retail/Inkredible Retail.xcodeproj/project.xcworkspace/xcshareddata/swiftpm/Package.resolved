@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "ios-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/movableink/ios-sdk",
+      "state" : {
+        "revision" : "486ec927de9e5cdafddc9e993ab4afd74a334673",
+        "version" : "0.7.0"
+      }
+    }
+  ],
+  "version" : 2
+}
