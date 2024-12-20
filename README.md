@@ -1,7 +1,10 @@
 # MovableInk iOS Sample Apps
 
-This repo contains two sample apps, one in SwiftUI and the other UIKit. The apps are a simple shopping experience type application to show how you might
+This repo contains 2 shoping experience type sample apps (Inkredible Retail), one in SwiftUI and the other UIKit, to show how you might
 utilize the MovableInk SDK in your apps.
+
+InAppMessagingSalesforce is an example of how you might use a MovableInk In App Message with Salesforce Marketing Cloud without utilizing the MovableInk SDK. 
+
 
 ## MovableInk SDK
 
