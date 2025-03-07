@@ -2,6 +2,8 @@ import SwiftUI
 
 @main
 struct InAppMessagingSalesforceApp: App {
+  @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+  
   init() {
     _ = SalesforceClient.shared
   }
