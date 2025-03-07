@@ -3,8 +3,11 @@ import MarketingCloudSDK
 
 final class SalesforceClient: NSObject, InAppMessageEventDelegate {
   static let shared: SalesforceClient = .init()
+  private let store: ViewedMessagesStore!
   
   override init() {
+    self.store = try! ViewedMessagesStore()
+    
     super.init()
     
     let appId = ""
@@ -25,21 +28,17 @@ final class SalesforceClient: NSObject, InAppMessageEventDelegate {
       switch result {
       case .success:
         // module is fully configured and ready for use
-        debugPrint(result)
+        debugPrint(result.rawValue)
         
         SFMCSdk.requestPushSdk { mp in
           mp.setEventDelegate(self)
         }
         
-        break
-        
       case .error, .cancelled, .timeout:
-        debugPrint(result)
-        break
+        debugPrint(result.rawValue)
         
       @unknown default:
-        debugPrint(result)
-        break
+        debugPrint(result.rawValue)
       }
     }
     
@@ -48,6 +47,32 @@ final class SalesforceClient: NSObject, InAppMessageEventDelegate {
         .setPush(config: mobilePushConfiguration, onCompletion: completionHandler)
         .build()
     )
+  }
+  
+  func didRegisterForRemoteNotifications(with deviceToken: Data) {
+    SFMCSdk.requestPushSdk { mp in
+      mp.setDeviceToken(deviceToken)
+    }
+  }
+  
+  func handleRemoteNotification(userInfo: [AnyHashable: Any], completion: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
+    SFMCSdk.requestPushSdk { mp in
+      mp.setNotificationUserInfo(userInfo)
+    }
+    
+    completion(.newData)
+    
+    return true
+  }
+  
+  func handleUserNotification(response: UNNotificationResponse, completion: @escaping () -> Void) -> Bool {
+    SFMCSdk.requestPushSdk { mp in
+      mp.setNotificationRequest(response.notification.request)
+    }
+    
+    completion()
+    
+    return true
   }
 }
 
@@ -75,13 +100,20 @@ extension SalesforceClient {
     
     guard let miLink = URL(string: miLinkString) else { return false }
     
-    SFMCSdk.requestPushSdk { mp in
-      // let messageID = mp.messageId(forMessage: message)
     
+    SFMCSdk.requestPushSdk { [unowned self] mp in
+      // Grab the message id to check if we can view it
+      let messageID = mp.messageId(forMessage: message)
+      guard store.canView(id: messageID) else { return print("Skipping \(messageID ?? "")") }
+      
       Task { @MainActor in
         WebViewController.show(miLink: miLink) { buttonID in
           // self?.logClick(miLink: miLink.absoluteString, buttonID: buttonID, messageID: messageID)
         }
+        
+        // Store the message as seen
+        self.store.view(id: messageID)
+        print("Stored \(messageID ?? "")")
       }
     }
     
